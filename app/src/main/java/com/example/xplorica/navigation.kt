@@ -50,7 +50,12 @@ fun Nav(navController: NavHostController) {
             // Bottom bar screens
             composable("home") { HomeScreen(navController) }
             composable("ar_screen") {
-                LaunchARButton(navController = navController)
+                val context = LocalContext.current
+                LaunchARButton(
+                    navController = navController,
+                    context = context,
+                    modelUrl = "https://modelviewer.dev/shared-assets/models/Astronaut.glb" // Demo model
+                )
             }
             composable("search") { SearchScreen(navController) }
         }
