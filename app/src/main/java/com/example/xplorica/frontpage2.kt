@@ -658,8 +658,8 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun ARScreen(navController: NavController, context: Context, modifier: Modifier = Modifier) {
-    val modelUrl = "https://fyfevkzcuzuqpiamtufx.supabase.co/storage/v1/object/public/xplorica/places/bharathanatyam_dancerr.glb"
+fun ARScreen(navController: NavController,context: Context, modifier: Modifier = Modifier) {
+    val modelUrl = "https://yourusername.github.io/models/dance_model.glb" // 🔁 Your hosted .glb file here
 
     Button(
         onClick = {
@@ -671,17 +671,12 @@ fun ARScreen(navController: NavController, context: Context, modifier: Modifier 
 
             val sceneViewerIntent = Intent(Intent.ACTION_VIEW).apply {
                 data = intentUri
-                setPackage("com.google.android.googlequicksearchbox") // Scene Viewer package
+                setPackage("com.google.android.googlequicksearchbox")
             }
 
-            try {
-                context.startActivity(sceneViewerIntent)
-            } catch (e: ActivityNotFoundException) {
-                Toast.makeText(context, "Scene Viewer not found!", Toast.LENGTH_SHORT).show()
-            }
+            context.startActivity(sceneViewerIntent)
         },
         modifier = modifier
-            .padding(16.dp)
     ) {
         Text("View Dance in AR")
     }

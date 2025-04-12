@@ -8,7 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.xplorica.ARScreen
+
 import com.example.xplorica.BottomNavBar
 import com.example.xplorica.FactsScreen
 import com.example.xplorica.FrontPage
@@ -16,6 +16,7 @@ import com.example.xplorica.FrontPage2
 import com.example.xplorica.HomeScreen
 import com.example.xplorica.Mainmenu
 import com.example.xplorica.ui.LaunchARButton
+import com.example.xplorica.ui.SearchScreen
 
 @Composable
 fun Nav(navController: NavHostController) {
@@ -49,10 +50,9 @@ fun Nav(navController: NavHostController) {
             // Bottom bar screens
             composable("home") { HomeScreen(navController) }
             composable("ar_screen") {
-                val context = LocalContext.current
-                LaunchARButton(navController = navController, context = context)
+                LaunchARButton(navController = navController)
             }
-            composable("facts") { FactsScreen(navController) }
+            composable("search") { SearchScreen(navController) }
         }
     }
 }
