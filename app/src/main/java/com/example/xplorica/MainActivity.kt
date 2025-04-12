@@ -1,5 +1,7 @@
 package com.example.xplorica
 
+import Nav
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,6 +15,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 
 import com.example.xplorica.ui.SearchScreen
 
@@ -24,17 +29,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // 👇 Request location permissions here
         checkLocationPermissions()
 
         setContent {
             XploricaTheme {
-
-                SearchScreen()
-                }
+                val navController = rememberNavController()
+                Nav(navController)
             }
         }
+    }
+
 
 
     private fun checkLocationPermissions() {

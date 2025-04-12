@@ -9,9 +9,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 
 @Composable
-fun LaunchARButton(context: Context, modelUrl: String, modifier: Modifier = Modifier) {
+fun LaunchARButton(navController: NavController,context: Context, modifier: Modifier = Modifier) {
+    val modelUrl = "https://yourusername.github.io/models/dance_model.glb" // 🔁 Your hosted .glb file here
+
     Button(
         onClick = {
             val intentUri = Uri.parse("https://arvr.google.com/scene-viewer/1.0")
@@ -22,7 +25,7 @@ fun LaunchARButton(context: Context, modelUrl: String, modifier: Modifier = Modi
 
             val sceneViewerIntent = Intent(Intent.ACTION_VIEW).apply {
                 data = intentUri
-                setPackage("com.google.android.googlequicksearchbox") // Required for Scene Viewer
+                setPackage("com.google.android.googlequicksearchbox")
             }
 
             context.startActivity(sceneViewerIntent)

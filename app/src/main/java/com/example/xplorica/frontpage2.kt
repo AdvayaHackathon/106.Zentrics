@@ -62,6 +62,14 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.with
 import androidx.compose.foundation.border
 
+
+import androidx.compose.material.icons.filled.Explore
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+
+
 import androidx.compose.ui.platform.LocalContext
 
 import androidx.compose.ui.viewinterop.AndroidView
@@ -74,18 +82,28 @@ import okhttp3.Request
 import org.json.JSONArray
 import java.io.IOException
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.graphics.Typeface
 import android.os.Handler
 import android.os.Looper
 
+import androidx.compose.material.icons.rounded.ViewInAr
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 
 import okhttp3.*
 import org.osmdroid.views.overlay.Overlay
 
 
 @Composable
-fun FrontPage2() {
+fun FrontPage2(navController: NavHostController) {
     val Beige = Color(0xFFFFFF)
     val AlataFont = FontFamily(
         Font(R.font.alata)
@@ -110,7 +128,9 @@ fun FrontPage2() {
                 contentDescription = "Menu",
                 modifier = Modifier
                     .size(25.dp)
-                    .clickable { /* Handle menu click */ }
+                    .clickable {
+                        navController.navigate("menu")
+                    }
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -144,6 +164,7 @@ fun FrontPage2() {
             ),
             modifier = Modifier.padding(start = 25.dp, top = 155.dp)
         )
+        var showMenu by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -158,41 +179,95 @@ fun FrontPage2() {
                     .padding(horizontal = 20.dp, vertical = 30.dp)
                     .clip(RoundedCornerShape(10.dp))
             ) {
+                // Map behind
                 OsmMapView(modifier = Modifier.fillMaxSize())
+
+                // Transparent gesture layer on top
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    showMenu = true
+                                }
+                            )
+                        }
+                )
+
+                // Show the menu
+                if (showMenu) {
+                    // ⬅️ Intercept back press only when menu is visible
+                    BackHandler {
+                        showMenu = false
+                    }
+
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp)
+                            .widthIn(min = 150.dp, max = 180.dp)
+                            .heightIn(min = 80.dp, max = 120.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(12.dp),
+                        tonalElevation = 8.dp
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            TextButton(onClick = {
+                                showMenu = false
+                            }) {
+                                Text("Plan")
+                            }
+                            TextButton(onClick = {
+                                showMenu = false
+                            }) {
+                                Text("Events")
+                            }
+                        }
+                    }
+                }
             }
         }
-
 
         // Bottom Navigation Bar
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom
         ) {
-            BottomNavBar()
+            BottomNavBar(navController)
         }
     }
 }
 
-data class BottomNavItem(val label: String, val icon: ImageVector)
+
+
+data class BottomNavItem(val label: String, val icon: ImageVector, val route: String)
 
 @Composable
-fun BottomNavBar() {
+fun BottomNavBar(navController: NavController) {
     val items = listOf(
-        BottomNavItem("Home", Icons.Default.Home),
-        BottomNavItem("Search", Icons.Default.Search),
-        BottomNavItem("Facts", Icons.Default.Edit)
+        BottomNavItem("Home", Icons.Default.Home, "home"),
+        BottomNavItem("AR", Icons.Rounded.ViewInAr, "ar_screen"),
+        BottomNavItem("Search", Icons.Default.Search, "search")
     )
 
     var selectedItem by remember { mutableStateOf(0) }
     val BottomBarColor = Color(0xFFEDF1FC)
 
-    NavigationBar(
-        containerColor = BottomBarColor
-    ) {
+    NavigationBar(containerColor = BottomBarColor) {
         items.forEachIndexed { index, item ->
             NavigationBarItem(
                 selected = selectedItem == index,
-                onClick = { selectedItem = index },
+                onClick = {
+                    selectedItem = index
+                    navController.navigate(item.route) {
+                        popUpTo("home") { inclusive = false }
+                        launchSingleTop = true
+                    }
+                },
                 icon = {
                     Icon(
                         imageVector = item.icon,
@@ -573,11 +648,63 @@ fun AnimatedSearchText() {
         }
     }
 }
-
-
-
-@Preview(showBackground = true)
 @Composable
-fun PreviewFrontPage2() {
-    FrontPage2()
+fun HomeScreen(navController: NavController) {
+    Text(
+        text = "Home Screen",
+        fontSize = 24.sp,
+        modifier = Modifier
+    )
 }
+
+@Composable
+fun ARScreen(navController: NavController, context: Context, modifier: Modifier = Modifier) {
+    val modelUrl = "https://fyfevkzcuzuqpiamtufx.supabase.co/storage/v1/object/public/xplorica/places/bharathanatyam_dancerr.glb"
+
+    Button(
+        onClick = {
+            val intentUri = Uri.parse("https://arvr.google.com/scene-viewer/1.0")
+                .buildUpon()
+                .appendQueryParameter("file", modelUrl)
+                .appendQueryParameter("mode", "ar_preferred")
+                .build()
+
+            val sceneViewerIntent = Intent(Intent.ACTION_VIEW).apply {
+                data = intentUri
+                setPackage("com.google.android.googlequicksearchbox") // Scene Viewer package
+            }
+
+            try {
+                context.startActivity(sceneViewerIntent)
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(context, "Scene Viewer not found!", Toast.LENGTH_SHORT).show()
+            }
+        },
+        modifier = modifier
+            .padding(16.dp)
+    ) {
+        Text("View Dance in AR")
+    }
+}
+
+@Composable
+fun FactsScreen(navController: NavController) {
+    Text(
+        text = "Facts Screen",
+        fontSize = 24.sp,
+        modifier = Modifier
+    )
+}
+
+
+@Composable
+fun Mainmenu(navController: NavController) {
+    Text(
+        text = "Facts Screen",
+        fontSize = 24.sp,
+        modifier = Modifier
+    )
+}
+
+
+
